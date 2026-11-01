@@ -1,0 +1,21 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - '!file.inFolder("_templates")'
+    - 'note.schema == 2 && (note.type == "topic" || note.type == "concept" || note.type == "lab" || note.type == "implementation")'
+properties:
+  file.name:
+    displayName: Note
+  note.subjects:
+    displayName: Subjects
+  note.status:
+    displayName: Review
+views:
+  - type: table
+    name: Knowledge
+    order:
+      - file.name
+      - note.subjects
+      - note.type
+      - note.status
+      - note.updated

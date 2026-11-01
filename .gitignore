@@ -1,0 +1,11 @@
+# Obsidian per-device state
+Vault/.obsidian/workspace*.json
+Vault/.obsidian/cache
+Vault/.obsidian/plugins/
+Vault/.trash/
+# Private content
+Vault/Subjects/*/
+Vault/_system/Logs/
+Code/Subjects/
+Code/Tools/second_brain/trabajo/
+.DS_Store

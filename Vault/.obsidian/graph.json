@@ -1,0 +1,44 @@
+{
+  "collapse-filter": true,
+  "search": "-path:\"_templates\" -path:\"_system\" -path:\"_indices\" -path:\"_assets\" -path:\"/Raw/\"",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [
+    {
+      "query": "path:\"Concepts\"",
+      "color": {
+        "a": 1,
+        "rgb": 3766639
+      }
+    },
+    {
+      "query": "path:\"Implementations\" OR path:\"/Labs/\"",
+      "color": {
+        "a": 1,
+        "rgb": 11433514
+      }
+    },
+    {
+      "query": "path:\"Subjects\"",
+      "color": {
+        "a": 1,
+        "rgb": 3832757
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.518713248970312,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 0.17283513867131975,
+  "close": true
+}

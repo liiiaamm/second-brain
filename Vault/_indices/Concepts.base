@@ -1,0 +1,21 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - '!file.inFolder("_templates")'
+    - 'note.type == "concept"'
+properties:
+  file.name:
+    displayName: Note
+  note.subjects:
+    displayName: Subjects
+  note.status:
+    displayName: Review
+views:
+  - type: table
+    name: Concepts
+    order:
+      - file.name
+      - note.subjects
+      - note.type
+      - note.status
+      - note.updated

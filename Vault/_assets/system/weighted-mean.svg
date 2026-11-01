@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="300" viewBox="0 0 920 300" role="img" aria-label="Weighted mean: 2 times 0.25 gives 0.5; 8 times 0.75 gives 6; the sum is 6.5">
+<rect width="920" height="300" rx="18" fill="#f3f6fa"/>
+<g font-family="Segoe UI, Arial, sans-serif" text-anchor="middle">
+<text x="460" y="38" font-size="15" letter-spacing="2" fill="#42546a">INPUTS → CONTRIBUTIONS → RESULT</text>
+<rect x="36" y="75" width="175" height="80" rx="12" fill="#e2ecf7" stroke="#4681b1"/>
+<text x="124" y="108" font-size="16" fill="#34465b">Value 1</text><text x="124" y="140" font-size="26" fill="#18334e">2</text>
+<rect x="36" y="180" width="175" height="80" rx="12" fill="#e2ecf7" stroke="#4681b1"/>
+<text x="124" y="213" font-size="16" fill="#34465b">Value 2</text><text x="124" y="246" font-size="26" fill="#18334e">8</text>
+<path d="M211 116H350 M211 220H350 M550 116H612V166H682 M550 220H612V166" fill="none" stroke="#648095" stroke-width="2"/>
+<text x="281" y="99" font-size="19" fill="#42546a">× 0.25</text><text x="281" y="204" font-size="19" fill="#42546a">× 0.75</text>
+<rect x="350" y="75" width="200" height="80" rx="12" fill="#ece8f7" stroke="#8b7cba"/>
+<text x="450" y="108" font-size="16" fill="#514970">Contribution 1</text><text x="450" y="140" font-size="26" fill="#332b50">0.5</text>
+<rect x="350" y="180" width="200" height="80" rx="12" fill="#ece8f7" stroke="#8b7cba"/>
+<text x="450" y="213" font-size="16" fill="#514970">Contribution 2</text><text x="450" y="246" font-size="26" fill="#332b50">6</text>
+<rect x="682" y="116" width="200" height="100" rx="12" fill="#dcefe9" stroke="#3e8c74"/>
+<text x="782" y="148" font-size="16" fill="#2b6755">Sum</text><text x="782" y="190" font-size="34" font-weight="600" fill="#205544">6.5</text>
+</g></svg>

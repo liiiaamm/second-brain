@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second brain · one batch, replayed</title>
+<meta name="description" content="Step through one batch of lecture material as it goes from Raw/ to a validated Obsidian note: inventory, package, editor, write gate, independent audit, concepts and close.">
+<link rel="stylesheet" href="web/demo.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <p class="eyebrow">Second brain</p>
+    <h1>One batch, replayed</h1>
+    <p class="lede">Four lecture pages go in. One note comes out, but only after a write gate and an auditor who didn't write it have both let it through. Step through it.</p>
+  </div>
+  <a class="repo" href="https://github.com/liiiaamm/second-brain">Read the system on GitHub →</a>
+</header>
+
+<nav class="controls" aria-label="Replay controls">
+  <button id="prev" aria-label="Previous step">←</button>
+  <button id="play" class="primary">Play</button>
+  <button id="next" aria-label="Next step">→</button>
+  <div class="track" id="track" role="tablist"></div>
+  <span class="count" id="count"></span>
+</nav>
+<p class="caption" id="caption"></p>
+
+<main class="grid">
+  <section class="col raw">
+    <h2><span class="dot raw-dot"></span>Raw/ <small>lecture-07.pdf · read-only</small></h2>
+    <div id="pages"></div>
+  </section>
+
+  <section class="col agents">
+    <h2><span class="dot agent-dot"></span>Agents</h2>
+    <ol class="log" id="log"></ol>
+    <h3>cobertura.json</h3>
+    <table class="cov" id="cov"><thead><tr><th>Page</th><th>Status</th><th>Destination</th><th>Review</th></tr></thead><tbody></tbody></table>
+    <h3>Concept candidates</h3>
+    <table class="cov" id="terms"><thead><tr><th>Term</th><th>Decision</th><th>Reason</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section class="col vault">
+    <h2><span class="dot vault-dot"></span>Vault/ <small id="notepath">Subjects/NLP/Notes/</small></h2>
+    <div class="note" id="note"></div>
+    <div class="side" id="side"></div>
+  </section>
+</main>
+
+<footer>
+  Teaching content in this demo is my own toy example, not course material. The roles, contracts and checks are the real ones from the repo: <a href="https://github.com/liiiaamm/second-brain/blob/main/Vault/_system/RUN.md">RUN.md</a>.
+</footer>
+<script src="web/demo.js"></script>
+</body>
+</html>
