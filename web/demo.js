@@ -2,334 +2,201 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
 
-  // ------------------------------------------------------------------ the source: four pages in Raw/
+  // ------------------------------------------------------------ the lecture (a toy example of my own)
   const PAGES = [
-    {
-      t: "7.1 Scores",
-      html: `<p>A query <i>q<sub>i</sub></i> asks, a key <i>k<sub>j</sub></i> answers. Their match is the scaled dot product</p>
-             <p style="text-align:center"><i>s<sub>ij</sub> = q<sub>i</sub>·k<sub>j</sub> / √d</i></p>
-             <p>Without the √d, scores grow with the dimension and softmax saturates.</p>`,
-    },
-    {
-      t: "7.2 Definitions",
-      html: `<ul><li><b>Logit</b>: an unnormalised score.</li>
-             <li><b>Softmax</b>: turns logits into weights that sum to 1.</li>
-             <li><b>Temperature</b> <i>T</i>: divides the logits first. Low <i>T</i> sharpens, high <i>T</i> flattens.</li></ul>`,
-    },
-    {
-      t: "7.3 Attention weights",
-      html: `<p><i>α<sub>ij</sub> = softmax<sub>j</sub>(s<sub>ij</sub>)</i>: for each query, the weights over the <b>keys</b> sum to 1.</p>
-             <svg class="mini" width="150" height="74" viewBox="0 0 150 74" aria-hidden="true">
-               ${[0, 1, 2].map((r) => [0, 1, 2].map((c) => `<rect x="${8 + c * 26}" y="${6 + r * 22}" width="22" height="18" rx="2" fill="#0c716f" opacity="${[[.6, .25, .15], [.2, .7, .1], [.33, .33, .34]][r][c]}"/>`).join("")).join("")}
-               ${[0, 1, 2].map((r) => `<text x="92" y="${19 + r * 22}" font-size="10" font-family="monospace" fill="#6b6f78">→ Σ = 1</text>`).join("")}
-             </svg>
-             <p>Output: <i>o<sub>i</sub> = Σ<sub>j</sub> α<sub>ij</sub> v<sub>j</sub></i></p>`,
-    },
-    {
-      t: "Before next week",
-      html: `<p>The derivation of the √d scaling <b>will be on the exam</b>.</p>
-             <p>Office hours move to Thursday, 16:00.</p>`,
-    },
+    { t: "Scores", body: `<p>A query <i>q</i> is compared with every key <i>k</i>:</p><p style="text-align:center"><i>s = q·k / √d</i></p><p>Without √d, softmax saturates.</p>` },
+    { t: "Definitions", body: `<p><b>Logit</b>: a raw score.</p><p><b>Softmax</b>: turns scores into weights that sum to 1.</p><p><b>Temperature</b>: divides the scores first.</p>` },
+    { t: "Attention weights", body: `<p>For each query, the weights over the <b>keys</b> sum to 1.</p><p>Output: a weighted mix of the values.</p>` },
+    { t: "Before next week", body: `<p>The √d derivation <b>will be on the exam</b>.</p><p>Office hours move to Thursday.</p>` },
   ];
-  const plain = PAGES.map((p) => p.t + "\n" + p.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
-  let HASH = PAGES.map(() => "…");
+  let HASH = PAGES.map(() => "········");
 
-  // ------------------------------------------------------------------ roles
-  const ROLE = {
-    start: ["Start", "#6b6f78"],
-    tool: ["sc.py", "#4b5563"],
-    coord: ["Coordinator", "#6f4caf"],
-    editor: ["Editor", "#b16315"],
-    gate: ["Write gate", "#c4563a"],
-    auditor: ["Auditor", "#0c716f"],
-    connect: ["Connect", "#19844f"],
-  };
+  const pages = (opts = {}) => `<div class="pages">${PAGES.map((p, i) => `
+      <div class="pg ${opts.hot && opts.hot.includes(i) ? "hot" : ""} ${opts.dim && opts.dim.includes(i) ? "dim" : ""}">
+        <span class="n">p${i + 1}</span><h4>${p.t}</h4>${p.body}
+        ${opts.hash ? `<div class="hash">✓ ${HASH[i]}</div>` : ""}
+      </div>`).join("")}</div>`;
 
-  // ------------------------------------------------------------------ the replay
-  const STEPS = [
-    {
-      who: "start",
-      say: "Four new lecture pages land in Raw/. The vault has nothing on attention yet.",
-      log: [["tool", "dim", "waiting for a run…"]],
-    },
-    {
-      who: "tool",
-      say: "The toolkit inventories every page with SHA-256. Raw/ is read, never edited.",
-      log: [["tool", "", "sc.py preparar --asignatura NLP"], ["tool", "ok", "4 units · 4 new · 0 changed"]],
-      do(s) {
-        s.hashed = true;
-        s.cov = PAGES.map(() => ({ st: "pending", dest: "—", rv: "—" }));
-      },
-    },
-    {
-      who: "coord",
-      say: "The coordinator cuts one package out of whole teaching units and gives every output exactly one writer.",
-      log: [
-        ["coord", "", "paquete nlp-07 · units 1–4"],
-        ["coord", "", "Notes/Topic 07 → editor · Concepts/* → connect"],
-        ["coord", "", "auditor: a different agent"],
-      ],
-      do(s) {
-        s.terms = [
-          ["logit", "pending", "—"],
-          ["softmax", "pending", "—"],
-          ["temperature", "pending", "—"],
-          ["attention weights", "pending", "—"],
-        ];
-      },
-    },
-    {
-      who: "editor",
-      say: "The editor reads pages 1–3, images included, and drafts the topic note. It decides on three of the four terms and quietly skips one.",
-      log: [["editor", "", "read p1–p3 + contact sheet"], ["editor", "", "draft Notes/Topic 07 - Attention.md"]],
-      do(s) {
-        s.reading = [0, 1, 2];
-        s.cov[0] = { st: "integrated", dest: "Topic 07 §Scores", rv: "—" };
-        s.cov[1] = { st: "integrated", dest: "Topic 07 §Weights", rv: "—" };
-        s.cov[2] = { st: "integrated", dest: "Topic 07 §Weights", rv: "—" };
-        s.terms[0] = ["logit", "local", "support term, no question of its own"];
-        s.terms[1] = ["softmax", "link", "Concepts/Softmax exists, same object"];
-        s.terms[3] = ["attention weights", "local", "it is this topic"];
-        s.note = { v: 1, status: "draft" };
-      },
-    },
-    {
-      who: "editor",
-      say: "Page 4 looks like logistics, but exam announcements are never thrown away. The content goes into the topic and the logistics into the subject profile.",
-      log: [["editor", "", "read p4 · exam announcement → topic"], ["editor", "", "office hours → _profile.md (confirmed)"]],
-      do(s) {
-        s.reading = [3];
-        s.cov[3] = { st: "integrated", dest: "Topic 07 ⚠ + _profile", rv: "—" };
-        s.exam = true;
-        s.side.push({ k: "profile" });
-      },
-    },
-    {
-      who: "gate",
-      say: "Nothing goes straight into a note. The draft goes through the write gate first, and it bounces.",
-      log: [["gate", "", "sc.ps1 escribir --comprobar"], ["gate", "bad", "✗ §Scores: \\( … \\) delimiter, use $…$"]],
-      do(s) {
-        s.reading = [];
-        s.gateErr = true;
-        s.side.push({ k: "gate-bad" });
-      },
-    },
-    {
-      who: "gate",
-      say: "Fixed and re-submitted. It passes: structure, maths and links are checked, a backup is saved, and the note moves to in_review.",
-      log: [["editor", "", "fix delimiter → $\\sqrt{d}$"], ["gate", "ok", "✓ maths · callouts · links · backup saved"]],
-      do(s) {
-        s.gateErr = false;
-        s.side = s.side.filter((c) => c.k !== "gate-bad");
-        s.side.push({ k: "gate-ok" });
-        s.note = { v: 2, status: "in_review" };
-      },
-    },
-    {
-      who: "auditor",
-      say: "A different agent audits, with the original pages open instead of the editor's summary. It finds two things the gate can't see.",
-      log: [
-        ["auditor", "", "open p1–p4 next to the note"],
-        ["auditor", "bad", "BLOCKING §Weights: normalised over queries, p3 says keys"],
-        ["auditor", "bad", "MAJOR p2 defines temperature: no decision"],
-      ],
-      do(s) {
-        s.flag = [1, 2];
-        s.err = true;
-        s.terms[2] = ["temperature", "por_decidir", "terminos --cierre fails"];
-        s.cov[1].rv = "issue";
-        s.cov[2].rv = "issue";
-        s.side.push({ k: "findings" });
-      },
-    },
-    {
-      who: "editor",
-      say: "The editor fixes both. Temperature doesn't get a new card: Softmax already has a section that answers it.",
-      log: [["editor", "", "§Weights: over the keys"], ["editor", "", "temperature → Concepts/Softmax#Temperature"]],
-      do(s) {
-        s.flag = [];
-        s.err = false;
-        s.fix = true;
-        s.terms[2] = ["temperature", "section", "Concepts/Softmax#Temperature"];
-        s.note = { v: 3, status: "in_review" };
-      },
-    },
-    {
-      who: "auditor",
-      say: "The re-check covers only the findings and whatever they touch, not the whole batch again.",
-      log: [["auditor", "ok", "2/2 findings closed"], ["auditor", "ok", "p1–p4 reviewed: fit"]],
-      do(s) {
-        s.closed = true;
-        s.cov.forEach((r) => (r.rv = "fit"));
-      },
-    },
-    {
-      who: "connect",
-      say: "Connect writes the other direction of the link: Softmax now lists attention as a real use, so the link works both ways.",
-      log: [["connect", "", "Concepts/Softmax.md · subjects + NLP"], ["connect", "", "+ use: attention normalises over keys"]],
-      do(s) {
-        s.side.push({ k: "concept" });
-      },
-    },
-    {
-      who: "tool",
-      say: "Only now is it validated. Coverage is closed, the audit is approved and the rendered view has been checked.",
-      log: [["tool", "ok", "comprobar-paquete --cierre ✓ 4/4 fit"], ["auditor", "ok", "view: light · dark · narrow ✓"]],
-      do(s) {
-        s.note = { v: 3, status: "validated" };
-        s.done = true;
-      },
-    },
-  ];
+  const AV = (letter, color) => `<span class="av" style="background:${color}">${letter}</span>`;
 
-  // ------------------------------------------------------------------ state at step i
-  function stateAt(i) {
-    const s = { hashed: false, cov: [], terms: [], reading: [], flag: [], note: null, side: [], log: [] };
-    for (let k = 0; k <= i; k++) {
-      if (STEPS[k].do) STEPS[k].do(s);
-      STEPS[k].log.forEach((l) => s.log.push({ l, step: k }));
-    }
-    return s;
-  }
-
-  // ------------------------------------------------------------------ rendering
-  const pill = (v) => `<span class="pill p-${v.replace(/\s/g, "_")}">${v}</span>`;
-
-  function renderPages(s) {
-    $("pages").innerHTML = PAGES.map((p, i) => {
-      const cls = ["page", s.hashed ? "hashed" : "", s.reading.includes(i) ? "reading" : "", s.flag.includes(i) ? "flag" : ""].join(" ");
-      return `<article class="${cls}"><span class="pn">p${i + 1}</span><h4>${p.t}</h4>${p.html}<div class="hash">sha256 ${HASH[i]}</div></article>`;
-    }).join("");
-  }
-
-  function renderLog(s, i) {
-    const el = $("log");
-    el.innerHTML = s.log.map(({ l: [r, cls, t], step }) => {
-      const [name, col] = ROLE[r];
-      return `<li class="${step === i ? "new" : ""}"><span class="r" style="color:${col === "#4b5563" ? "#c9cbd1" : col}">${name}</span> <span class="${cls}">${t.replace(/</g, "&lt;")}</span></li>`;
-    }).join("");
-    el.scrollTop = el.scrollHeight;
-  }
-
-  let prevCells = {};
-  function renderTables(s) {
-    const cells = {};
-    const tb = $("cov").tBodies[0];
-    tb.innerHTML = s.cov.length
-      ? s.cov.map((r, k) => {
-          const a = `p${k + 1}`, key = (c) => (cells[a + c] = c === "s" ? r.st : c === "d" ? r.dest : r.rv);
-          const ch = (c) => (prevCells[a + c] !== undefined && prevCells[a + c] !== key(c) ? "changed" : (key(c), ""));
-          return `<tr><td>${a}</td><td class="${ch("s")}">${pill(r.st)}</td><td class="${ch("d")}">${r.dest}</td><td class="${ch("r")}">${r.rv === "—" ? "—" : pill(r.rv)}</td></tr>`;
-        }).join("")
-      : `<tr><td colspan="4" style="color:var(--mut)">no package yet</td></tr>`;
-    const tt = $("terms").tBodies[0];
-    tt.innerHTML = s.terms.length
-      ? s.terms.map(([t, d, why]) => {
-          const ch = prevCells["t" + t] !== undefined && prevCells["t" + t] !== d ? "changed" : "";
-          cells["t" + t] = d;
-          return `<tr><td>${t}</td><td class="${ch}">${pill(d)}</td><td>${why}</td></tr>`;
-        }).join("")
-      : `<tr><td colspan="3" style="color:var(--mut)">inventoried by the coordinator</td></tr>`;
-    prevCells = cells;
-  }
-
-  function renderNote(s) {
-    const n = s.note;
-    $("notepath").textContent = n ? "Subjects/NLP/Notes/Topic 07 - Attention.md" : "Subjects/NLP/Notes/";
-    if (!n) {
-      $("note").innerHTML = `<p class="empty">No note yet. Nothing gets written before the source is inventoried and a package exists.</p>`;
-      return;
-    }
-    const sqrt = s.gateErr ? `<code class="raw">\\(\\sqrt d\\)</code>` : n.v === 1 ? `<code>\\(\\sqrt d\\)</code>` : `√d`;
-    const over = s.err ? `<mark class="err">over the queries</mark>` : s.fix ? `<mark class="fix">over the keys</mark>` : `over the queries`;
-    const denom = n.v === 3 ? `Σ<sub>m</sub> exp(s<sub>im</sub>)` : `Σ<sub>m</sub> exp(s<sub>mj</sub>)`;
-    const sm = n.v === 3 ? `<a class="wl" href="https://github.com/liiiaamm/second-brain/blob/main/Vault/Concepts/Softmax.md">softmax</a>` : "softmax";
-    const temp = s.fix
-      ? ` <mark class="fix">Dividing the scores by a <a class="wl" href="https://github.com/liiiaamm/second-brain/blob/main/Vault/Concepts/Softmax.md">temperature</a> T first makes the weights sharper or flatter.</mark>`
-      : "";
-    $("note").innerHTML = `
-      <div class="meta">${pill(n.status)} <span>type: topic</span><span>phase: offline</span><span>concepts: ${n.v === 3 ? "[Softmax]" : "[]"}</span></div>
-      <div class="nav">MOC - NLP | Topic 06 | Topic 08</div>
-      <h5>Attention - Topic 07</h5>
-      <p>Topic 06 turned tokens into vectors. This topic shows how each position decides which other positions to read from.</p>
+  const noteDraft = ({ status, badge, weights, sqrt, temp, link }) => `
+    <div class="note">
+      <span class="badge ${badge}">${status}</span>
+      <h5 style="margin-top:8px">Attention · Topic 07</h5>
       <h6>Scores</h6>
-      <p>Each query is compared with every key through a scaled dot product:</p>
-      <span class="f">s<sub>ij</sub> = q<sub>i</sub>·k<sub>j</sub> / √d</span>
-      <p>Dividing by ${sqrt} keeps the scores from growing with the dimension, which would push ${sm} into saturation.</p>
-      ${s.exam ? `<div class="co warning"><b>Exam announcement · confirmed</b>The derivation of the √d scaling will be asked. <span style="color:var(--mut)">p. 4</span></div>` : ""}
+      <p>Each query is compared with every key, and the score is divided by ${sqrt} so ${link ? `<u>softmax</u>` : "softmax"} doesn't saturate.</p>
+      <div class="callout"><b>Exam:</b> the √d derivation will be asked (p. 4).</div>
       <h6>Weights</h6>
-      <p>The scores are normalised with ${sm} ${over}, so each set of weights sums to one.${temp}</p>
-      <span class="f">α<sub>ij</sub> = exp(s<sub>ij</sub>) / ${denom}</span>
-      <div class="co example"><b>Example: each row is one query</b>A 3 × 3 weight matrix where every row sums to 1: query <i>i</i> spreads one unit of attention over the keys. <span style="color:var(--mut)">p. 3</span></div>
-      <p>The output mixes the values with those weights: <i>o<sub>i</sub> = Σ<sub>j</sub> α<sub>ij</sub> v<sub>j</sub></i>.</p>`;
-  }
+      <p>Scores are turned into weights with softmax, ${weights}, so they sum to one.${temp || ""}</p>
+    </div>`;
 
-  function renderSide(s) {
-    const html = s.side.map(({ k }) => {
-      if (k === "profile")
-        return `<div class="card"><div class="t">_profile.md · Assessment</div>Office hours: Thursday 16:00 · ${pill("confirmed")} <span style="color:var(--mut)">p. 4</span></div>`;
-      if (k === "gate-bad")
-        return `<div class="card gate-bad"><div class="t">write gate · rejected</div>Inline maths must use <code>$…$</code>. The candidate is not written and the original note is untouched.</div>`;
-      if (k === "gate-ok")
-        return `<div class="card gate-ok"><div class="t">write gate · passed</div>Maths, callouts, links and anchors checked. Exact backup kept. Passing proves structure, not quality.</div>`;
-      if (k === "findings")
-        return `<div class="card"><div class="t">audit · auditor ≠ editor</div>
-          <div class="find ${s.closed ? "closed" : ""}">${pill("blocking")} §Weights normalises over queries; p3 says keys.</div>
-          <div class="find ${s.closed ? "closed" : ""}">${pill("major")} p2 defines temperature; no decision recorded.</div></div>`;
-      if (k === "concept")
-        return `<div class="card"><div class="t">Concepts/Softmax.md · diff</div>
-          <div style="font:12px var(--mono);color:var(--green)">+ subjects: [NLP]</div>
-          <div style="font:12px var(--mono);color:var(--green)">+ Attention: same function, normalised over the key axis → Topic 07</div></div>`;
-      return "";
-    }).join("");
-    $("side").innerHTML = html;
-  }
+  // ------------------------------------------------------------ the seven stages
+  const STAGES = [
+    {
+      k: "Raw",
+      title: "Four pages arrive",
+      text: "A new lecture lands in the subject's <code>Raw/</code> folder. Before any model reads it, a script takes a fingerprint (SHA-256) of every page.",
+      why: "If a page changes later, the system knows exactly which notes depend on it. Originals are never edited.",
+      scene: () => `<p class="label">Raw/lecture-07.pdf</p>${pages({ hash: true })}
+        <p class="lock">🔒 Read-only. Every note will point back to a page number here.</p>`,
+    },
+    {
+      k: "Plan",
+      title: "One writer, one checker",
+      text: "A coordinator agent turns the pages into a work package. One agent writes the note, and a different one will check it. It also lists every term the lecture defines.",
+      why: "The writer never approves its own work. And no defined term can be quietly skipped, because each one needs a decision.",
+      scene: () => `
+        <div class="flow">
+          <div class="box"><h5>Package nlp-07</h5><p class="sub">Pages 1–4 · output: Topic 07</p></div>
+          <span class="arrow">→</span>
+          <div class="who">
+            <div class="agent">${AV("E", "#b16315")}<div><b>Editor</b><br><span class="sub" style="color:var(--mut);font-size:13px">writes the note</span></div></div>
+            <div class="agent">${AV("A", "#0c716f")}<div><b>Auditor</b><br><span class="sub" style="color:var(--mut);font-size:13px">a different agent, checks it</span></div></div>
+          </div>
+        </div>
+        <p class="label" style="margin-top:26px">Terms the lecture defines, each needs a decision</p>
+        <div class="terms">${["logit", "softmax", "temperature", "attention weights"].map((t) => `<span class="chip">${t} <small>?</small></span>`).join("")}</div>`,
+    },
+    {
+      k: "Write",
+      title: "The editor drafts the note",
+      text: "The editor reads every page, images included, and writes one note for the topic. Page 4 is split: the exam announcement goes into the note, the office hours into the subject's profile.",
+      why: "Exam hints are never thrown away as noise, but logistics don't clutter the notes either.",
+      scene: () => `
+        <div class="split">
+          ${noteDraft({ status: "draft", badge: "b-draft", weights: "over the queries", sqrt: `<code>\\(\\sqrt d\\)</code>` })}
+          <div>
+            <p class="label">Page 4 goes to two places</p>
+            <div class="box" style="margin-bottom:10px"><h5>“will be on the exam”</h5><p class="sub">→ warning in the topic note</p></div>
+            <div class="box"><h5>“office hours Thursday”</h5><p class="sub">→ subject profile</p></div>
+            <p class="label" style="margin-top:18px">Terms decided</p>
+            <div class="terms">
+              <span class="chip ok">logit <small>local</small></span><span class="chip ok">softmax <small>link</small></span>
+              <span class="chip ok">attention weights <small>local</small></span><span class="chip">temperature <small>?</small></span>
+            </div>
+          </div>
+        </div>`,
+    },
+    {
+      k: "Gate",
+      title: "The write gate bounces it",
+      text: "The draft can't be written into the vault directly. A script checks the maths syntax, every link and every anchor first. This draft used a LaTeX delimiter Obsidian doesn't render.",
+      why: "Broken formulas and dead links never reach the vault, and the original note is backed up before anything is replaced.",
+      scene: () => `
+        <div class="vs">
+          <div class="panel bad"><div class="verdict"><span class="i">✕</span>Rejected</div>
+            <p class="line">…divided by <code class="e">\\(\\sqrt d\\)</code> so softmax doesn't saturate.</p>
+            <p class="small">Inline maths must use <code>$…$</code>. Nothing was written.</p></div>
+          <div class="panel ok"><div class="verdict"><span class="i">✓</span>Accepted</div>
+            <p class="line">…divided by <mark class="g">√d</mark> so softmax doesn't saturate.</p>
+            <p class="small">Maths, links and anchors pass. Backup saved. Status: in review.</p></div>
+        </div>
+        <p class="small" style="margin-top:18px">Passing the gate proves the note is well formed, not that it is right. That's the next step.</p>`,
+    },
+    {
+      k: "Audit",
+      title: "A second agent checks it against the source",
+      text: "The auditor didn't write the note. It opens the original pages next to it and finds two problems the gate can't see.",
+      why: "This is the step that catches the confident mistakes an LLM makes when it summarises.",
+      scene: () => `
+        <div class="find">
+          <div class="row">
+            <div class="src"><span class="n">page 3 says</span>For each query, the weights over the <b>keys</b> sum to 1.</div>
+            <span class="ne">≠</span>
+            <div class="src" style="border-style:solid;background:#fff8f6;border-color:#f2c2b7"><span class="n">the note says</span>Scores are turned into weights <mark class="e">over the queries</mark>.</div>
+          </div>
+          <div class="row">
+            <div class="src"><span class="n">page 2 defines</span><b>Temperature</b>: divides the scores first.</div>
+            <span class="ne">≠</span>
+            <div class="src" style="border-style:solid;background:#fff8f6;border-color:#f2c2b7"><span class="n">the note</span><mark class="e">never decides what to do with it</mark></div>
+          </div>
+        </div>
+        <p class="small" style="margin-top:16px">Findings go back to the editor. The auditor never rewrites the note itself.</p>`,
+    },
+    {
+      k: "Fix",
+      title: "Fixed, and connected",
+      text: "The editor fixes both. Temperature doesn't get a new note, because the existing Softmax note already has a section on it, so the topic links there. The Softmax note gets a line back.",
+      why: "Each idea is explained once and linked from everywhere it's used, instead of being copied into every subject.",
+      scene: () => `
+        ${noteDraft({ status: "in review", badge: "b-review", weights: `<mark class="g">over the keys</mark>`, sqrt: "√d", link: true, temp: ` <mark class="g">A <u>temperature</u> T sharpens or flattens them.</mark>` })}
+        <div class="link2" style="margin-top:16px">
+          <div class="mini"><h5>Topic 07 · Attention</h5>links to Softmax § Temperature</div>
+          <svg viewBox="0 0 90 60" aria-hidden="true"><path d="M8 24 H82 M74 16 L82 24 L74 32 M82 40 H8 M16 32 L8 40 L16 48" fill="none" stroke="#1a8a55" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="mini"><h5>Concepts · Softmax</h5>already exists<div class="add">+ used in: Attention (NLP)</div></div>
+        </div>`,
+    },
+    {
+      k: "Done",
+      title: "Only now is it validated",
+      text: "The auditor re-checks just the two findings. A note is marked validated only when every check below is green.",
+      why: "Green isn't the default here. Anything still unchecked stays visibly “in review”.",
+      scene: () => `
+        <ul class="checks">
+          <li><span class="i">✓</span><div><b>Coverage 4 / 4 pages</b><span>Every page is in the note, in the profile, or excluded with a written reason.</span></div></li>
+          <li><span class="i">✓</span><div><b>Write gate</b><span>Maths, links and anchors well formed. Original backed up.</span></div></li>
+          <li><span class="i">✓</span><div><b>Independent audit</b><span>2 findings raised by the auditor, 2 closed after the fix.</span></div></li>
+          <li><span class="i">✓</span><div><b>Every defined term decided</b><span>logit · softmax · temperature · attention weights</span></div></li>
+          <li><span class="i">✓</span><div><b>Rendered view checked</b><span>Light mode, dark mode, narrow screen.</span></div></li>
+        </ul>
+        <p style="margin:18px 0 0"><span class="badge b-ok">validated</span> &nbsp;Subjects/NLP/Notes/Topic 07 - Attention.md</p>`,
+    },
+  ];
 
-  // ------------------------------------------------------------------ controls
-  let cur = 0, timer = null;
-  const track = $("track");
-  STEPS.forEach((st, k) => {
+  // ------------------------------------------------------------ pipeline + navigation
+  const pipe = $("pipe");
+  const fill = document.createElement("span");
+  fill.className = "fill";
+  pipe.appendChild(fill);
+  STAGES.forEach((s, i) => {
     const b = document.createElement("button");
-    b.setAttribute("role", "tab");
-    b.setAttribute("aria-label", `Step ${k + 1}: ${ROLE[st.who][0]}`);
-    b.title = ROLE[st.who][0];
-    b.onclick = () => { stop(); go(k); };
-    track.appendChild(b);
+    b.className = "st";
+    b.innerHTML = `<span class="c">${i + 1}</span><span class="l">${s.k}</span>`;
+    b.setAttribute("aria-label", `Stage ${i + 1}: ${s.title}`);
+    b.onclick = () => go(i);
+    pipe.appendChild(b);
   });
 
+  let cur = 0;
+  function setFill() {
+    const st = pipe.querySelectorAll(".st");
+    const span = st[STAGES.length - 1].offsetLeft - st[0].offsetLeft;
+    fill.style.width = `${(span * cur) / (STAGES.length - 1)}px`;
+  }
   function go(i) {
-    cur = Math.max(0, Math.min(STEPS.length - 1, i));
-    const s = stateAt(cur);
-    const [name, col] = ROLE[STEPS[cur].who];
-    $("caption").innerHTML = `<span class="who" style="background:${col}">${name}</span>${STEPS[cur].say}`;
-    $("count").textContent = `${cur + 1} / ${STEPS.length}`;
-    [...track.children].forEach((b, k) => { b.className = k === cur ? "on" : k < cur ? "done" : ""; b.setAttribute("aria-selected", k === cur); });
+    cur = Math.max(0, Math.min(STAGES.length - 1, i));
+    const s = STAGES[cur];
+    $("stepn").textContent = `Step ${cur + 1} of ${STAGES.length}`;
+    $("title").textContent = s.title;
+    $("text").innerHTML = s.text;
+    $("why").innerHTML = `<b>Why it matters</b>${s.why}`;
+    const sc = $("scene");
+    sc.classList.remove("enter");
+    sc.innerHTML = s.scene();
+    void sc.offsetWidth;
+    sc.classList.add("enter");
+    [...pipe.querySelectorAll(".st")].forEach((b, k) => { b.classList.toggle("on", k === cur); b.classList.toggle("done", k < cur); });
+    setFill();
     $("prev").disabled = cur === 0;
-    $("next").disabled = cur === STEPS.length - 1;
-    renderPages(s); renderLog(s, cur); renderTables(s); renderNote(s); renderSide(s);
+    $("next").textContent = cur === STAGES.length - 1 ? "Start again ↺" : "Next →";
   }
-  function stop() { clearInterval(timer); timer = null; $("play").textContent = cur === STEPS.length - 1 ? "Replay" : "Play"; }
-  function play() {
-    if (timer) return stop();
-    if (cur === STEPS.length - 1) { prevCells = {}; go(0); }
-    $("play").textContent = "Pause";
-    timer = setInterval(() => { if (cur >= STEPS.length - 1) return stop(); go(cur + 1); if (cur === STEPS.length - 1) stop(); }, 3200);
-  }
-  $("prev").onclick = () => { stop(); go(cur - 1); };
-  $("next").onclick = () => { stop(); go(cur + 1); };
-  $("play").onclick = play;
-  addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight") { stop(); go(cur + 1); }
-    if (e.key === "ArrowLeft") { stop(); go(cur - 1); }
-    if (e.key === " " && e.target === document.body) { e.preventDefault(); play(); }
-  });
-
-  // real SHA-256 of each page's text
-  const sha = async (t) => {
-    if (!crypto.subtle) return "unavailable";
-    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
-    return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 24) + "…";
+  $("prev").onclick = () => go(cur - 1);
+  $("next").onclick = () => {
+    const wasLast = cur === STAGES.length - 1;
+    go(wasLast ? 0 : cur + 1);
+    if (innerWidth < 860) pipe.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  Promise.all(plain.map(sha)).then((h) => { HASH = h; go(cur); });
+  addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") go(cur + 1);
+    if (e.key === "ArrowLeft") go(cur - 1);
+  });
+  addEventListener("resize", setFill);
+
+  // real SHA-256 of each page's text, computed in the browser
+  const text = PAGES.map((p) => p.t + " " + p.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  if (crypto.subtle) {
+    Promise.all(text.map((t) => crypto.subtle.digest("SHA-256", new TextEncoder().encode(t))))
+      .then((bufs) => { HASH = bufs.map((b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 12)); if (cur === 0) $("scene").innerHTML = STAGES[0].scene(); });
+  }
   go(0);
 })();
